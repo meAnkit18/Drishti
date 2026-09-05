@@ -63,12 +63,6 @@ function renderRoads(roads){
 }
 function renderCampus(campus){
   const G=window.KIET.layerGroups, cmap=window.KIET.map;
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='building'),{style:{color:'#2c3e50',weight:1,fillColor:'#d5d8dc',fillOpacity:0.9}}).bindPopup(l=>'<b>'+(l.feature.properties.name||'Building')+'</b>').addTo(G.context);
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='pitch'),{style:{color:'#1e8449',weight:1,fillColor:'#82e0aa',fillOpacity:0.8}}).bindPopup(l=>'<b>'+(l.feature.properties.name||'Ground')+'</b><br/>'+(l.feature.properties.sport||'')).addTo(G.context);
-  
-  
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='label'),{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:5,color:'#2c3e50',fillColor:'#f1c40f',fillOpacity:1,weight:2}).bindTooltip(f.properties.name||'',{permanent:true,direction:'top',opacity:0.9}).bindPopup('<b>'+(f.properties.name||'')+'</b><br/>'+(f.properties.category||'')+'<br/><small>'+(f.properties.confidence||'')+'</small>')}).addTo(G.labels);
-  L.control.layers(null,{'Buildings+Grounds':G.context,'Labels':G.labels},{collapsed:false}).addTo(cmap);
 }
 Promise.all([fetch('data/roads.geojson').then(r=>{if(!r.ok)throw 0;return r.json()}),fetch('data/campus.geojson').then(r=>{if(!r.ok)throw 0;return r.json()}),fetch('data/campus_accurate.geojson').then(r=>{if(!r.ok)throw 0;return r.json()})]).then(([roads,campus,acc])=>{window.KIET.raw={roads,campus,acc};renderRoads(roads);renderCampus(campus);renderAccurate(acc);const b=L.geoJSON(acc.features.filter(f=>f.properties.kind==='boundary_khasra'));if(b.getLayers().length)map.fitBounds(b.getBounds().pad(0.15));else{const b2=L.geoJSON(campus.features.filter(f=>f.properties.kind==='boundary'));if(b2.getLayers().length)map.fitBounds(b2.getBounds().pad(0.15));}}).catch(()=>{alert('Could not load data/*.geojson — run via python3 -m http.server');});
 </script>

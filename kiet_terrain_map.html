@@ -58,11 +58,11 @@ function renderRoads(roads){
 }
 function renderCampus(campus){
   const G=window.KIET.layerGroups, cmap=window.KIET.map;
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='building'),{style:{color:'#2c3e50',weight:1,fillColor:'#d5d8dc',fillOpacity:0.9}}).bindPopup(l=>'<b>'+(l.feature.properties.name||'Building')+'</b>').addTo(G.context);
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='pitch'),{style:{color:'#1e8449',weight:1,fillColor:'#82e0aa',fillOpacity:0.8}}).bindPopup(l=>'<b>'+(l.feature.properties.name||'Ground')+'</b><br/>'+(l.feature.properties.sport||'')).addTo(G.context);
   
   
-  L.geoJSON(campus.features.filter(f=>f.properties.kind==='label'),{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:5,color:'#2c3e50',fillColor:'#f1c40f',fillOpacity:1,weight:2}).bindTooltip(f.properties.name||'',{permanent:true,direction:'top',opacity:0.9}).bindPopup('<b>'+(f.properties.name||'')+'</b><br/>'+(f.properties.category||'')+'<br/><small>'+(f.properties.confidence||'')+'</small>')}).addTo(G.labels);
+  
+  
+  
 }
 function renderTerrain(T){
   const G=window.KIET.layerGroups, cmap=window.KIET.map;
@@ -90,7 +90,6 @@ function addControls(){
   const G=window.KIET.layerGroups, T=window.KIET.terrain;
   L.control.layers({OSM:osm,Satellite:sat},{
     'Main roads (NH-34/tertiary)':G.main,'Internal (service/residential)':G.internal,'Footpaths':G.foot,
-    'Buildings+Grounds':G.context,'Labels':G.labels,
     'Terrain / elevation+hillshade':T.elev,'Terrain / slope class':T.slope,
     'Terrain / contours 2m':T.cont,'Terrain / low pockets':T.low,
     'Accurate labels':G.accL,
