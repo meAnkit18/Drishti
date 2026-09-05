@@ -1,0 +1,55 @@
+{
+  "source": "Copernicus DEM GLO-30 Public, 2021 release, AWS Open Data",
+  "source_url": "https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_10_N28_00_E077_00_DEM/Copernicus_DSM_COG_10_N28_00_E077_00_DEM.tif",
+  "acquisition_date": "2026-09-05",
+  "product_type": "Digital Surface Model (DSM), not bare-earth DTM",
+  "resolution_nominal_m": 30,
+  "grid_spacing_arcsec": 1.0,
+  "crs": "EPSG:4326",
+  "vertical_datum": "EGM2008 geoid, per Copernicus DEM product documentation; confirm against product handbook for survey-grade work",
+  "vertical_accuracy": "absolute <4 m LE90; relative <2 m LE90 for slopes <=20%, <4 m for slopes >20%",
+  "horizontal_accuracy": "<6 m CE90",
+  "raw_file": "/home/ubuntu/kiet_terrain/data/terrain/raw/Copernicus_DSM_COG_10_N28_00_E077_00_DEM.tif",
+  "clipped_file": "/home/ubuntu/kiet_terrain/data/terrain/clipped/kiet_copernicus_glo30_clipped.tif",
+  "campus_boundary_source": "/home/ubuntu/kiet_terrain/campus_osm.geojson",
+  "campus_bbox_lonlat": [
+    77.4959414,
+    28.7509201,
+    77.5010837,
+    28.7542239
+  ],
+  "campus_bbox_latlon": [
+    28.7509201,
+    77.4959414,
+    28.7542239,
+    77.5010837
+  ],
+  "campus_centroid_latlon": [
+    28.752790943197606,
+    77.49883075446867
+  ],
+  "clipped_raster_bounds_lonlat": [
+    76.99986111111112,
+    28.000138888888888,
+    77.99986111111112,
+    29.000138888888888
+  ],
+  "valid_source_cell_count": 100,
+  "valid_source_elevation_min_m": 214.67860412597656,
+  "valid_source_elevation_max_m": 231.30755615234375,
+  "valid_source_elevation_mean_m": 219.2223193359375,
+  "raw_source_values_preserved": true,
+  "derivatives": [
+    "elevation_m.tif",
+    "slope_degrees.tif",
+    "aspect_degrees.tif",
+    "local_relief_m.tif",
+    "low_points.geojson",
+    "terrain_grid.json"
+  ],
+  "license": "Copernicus DEM GLO-30 Public is free for general public use under Copernicus terms; include required attribution.",
+  "higher_resolution_check": "Copernicus EEA-10 is European coverage and does not cover KIET in Uttar Pradesh; no freely downloadable 10 m Copernicus product covering this site was used.",
+  "alternative_baseline": "NASA SRTMGL1 v3 is also approximately 30 m and openly accessible; Copernicus GLO-30 was selected as the primary baseline.",
+  "attribution": "\u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.",
+  "limitations": "30 m DSM cells and meter-scale vertical error are insufficient for survey-grade campus drainage/flood depths. Buildings/vegetation may be present. A local RTK/LiDAR/total-station survey is required for engineering-grade modeling."
+}

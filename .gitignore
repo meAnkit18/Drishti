@@ -1,0 +1,8 @@
+# redundant source zips (extracted folders are tracked instead)
+*.zip
+kiet_real_terrain_package.zip
+kiet_campus_map_reconstruction.zip
+# python cache
+__pycache__/
+# local server logs
+*.log
