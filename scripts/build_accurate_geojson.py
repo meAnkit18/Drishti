@@ -2,14 +2,17 @@ import json, math
 # Anchors WGS84
 A_LAT, A_LON = 28.75257, 77.49851
 # Local ENU origin at A-Block SE corner; x=east(m), y=north(m)
-# Control points: (e, n, lat, lon) - 6 pts from sanctioned dims + satellite
+# Control points: (e, n, lat, lon) - sanctioned ENU fitted to OSM/Google-verified
+# centroids 2026-09-05 via satellite cross-check (browser-mcp). Letters matched
+# A/B/C/E/F/G by name, D-star by unique star shape = OSM Auditorium.
 CONTROLS = [
-    (0.0, 0.0, 28.752441, 77.49902),      # A-Block SE (gate)
-    (-45.70, 0.0, 28.752441, 77.49855),   # A-Block SW (45.70m west)
-    (-45.70, 45.00, 28.752845, 77.49855), # A-Block NW
-    (0.0, 45.00, 28.752845, 77.49902),    # A-Block NE
-    (-120.0, 180.0, 28.75406, 77.49775),  # Railway north edge approx
-    (-200.0, 90.0, 28.75325, 77.49690),   # Girls hostel west approx
+    (-22.85, 22.50, 28.75315, 77.49710),   # A-Block centroid -> OSM 'A block'
+    (-117.50, 119.00, 28.75239, 77.49805), # B Boys -> OSM 'B-Block'
+    (-106.00, 172.50, 28.75233, 77.49773), # C -> OSM 'C block'
+    (-119.89, 107.50, 28.75217, 77.49829), # E Eng (40.23 front) -> OSM 'E-Block'
+    (-147.75, 150.00, 28.75164, 77.49883), # F Boys -> OSM 'F Block'
+    (-140.00, 153.00, 28.75291, 77.49852), # G -> OSM 'G Block'
+    (-70.00, 60.00, 28.75209, 77.49982),   # D Lecture star -> OSM 'Auditorium'
 ]
 def solve_affine(pts):
     # Solve lon = ax*e + bx*n + cx, lat = ay*e + by*n + cy via least squares (normal eq, 3x3)
@@ -93,6 +96,32 @@ def build_accurate():
         lon = sum(p[0] for p in ring[:-1])/ (len(ring)-1)
         lat = sum(p[1] for p in ring[:-1])/ (len(ring)-1)
         feats.append({"type":"Feature","properties":{"kind":"label_accurate","sanctioned_name":f["properties"]["sanctioned_name"],"floors":f["properties"]["floors"],"lat":round(lat,5),"lon":round(lon,5)},"geometry":{"type":"Point","coordinates":[round(lon,5),round(lat,5)]}})
+    # Snap matched blocks to OSM/Google-verified polygons (browser-mcp satellite
+    # cross-check 2026-09-05). OSM geometry is the truth; sanctioned attrs kept.
+    OSM_MATCH = {"A":"A block","B":"B-Block","C":"C block","E":"E-Block","F":"F Block","G":"G Block","D":"Auditorium","L":"TBI"}
+    try:
+        osm = json.load(open("data/campus.geojson"))
+        omap = {}
+        for f in osm["features"]:
+            if f["geometry"]["type"] == "Polygon" and f["properties"].get("name"):
+                omap[f["properties"]["name"]] = f["geometry"]["coordinates"]
+        for f in feats:
+            p = f["properties"]
+            if p.get("kind") == "sanctioned_building" and p.get("sanctioned_name") in OSM_MATCH:
+                oname = OSM_MATCH[p["sanctioned_name"]]
+                if oname in omap:
+                    f["geometry"]["coordinates"] = omap[oname]
+                    p["confidence"] = "high"
+                    p["osm_match"] = oname
+        # rebuild labels from final (possibly snapped) geometry
+        feats = [f for f in feats if f["properties"].get("kind") != "label_accurate"]
+        for f in [x for x in feats if x["properties"]["kind"]=="sanctioned_building"]:
+            ring = f["geometry"]["coordinates"][0]
+            lon = sum(p[0] for p in ring[:-1])/ (len(ring)-1)
+            lat = sum(p[1] for p in ring[:-1])/ (len(ring)-1)
+            feats.append({"type":"Feature","properties":{"kind":"label_accurate","sanctioned_name":f["properties"]["sanctioned_name"],"floors":f["properties"]["floors"],"lat":round(lat,5),"lon":round(lon,5)},"geometry":{"type":"Point","coordinates":[round(lon,5),round(lat,5)]}})
+    except FileNotFoundError:
+        pass
     fc = {"type":"FeatureCollection","name":"KIET sanctioned accurate","features":feats}
     json.dump(fc, open("data/campus_accurate.geojson","w"), indent=1)
     print(f"Wrote {len(feats)} feats")
