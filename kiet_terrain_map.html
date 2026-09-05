@@ -9,7 +9,7 @@
 </head>
 <body>
 <div id="map"></div>
-<div class="notice">Sanctioned Rev6 16/10/2024 + Copernicus 30m DSM — approx 3-5m, verify vs Google Maps</div>
+<div class="notice">Terrain: Copernicus GLO-30 30m DSM (broad fall only — not for surveying/drainage) · Roads/buildings © OpenStreetMap contributors</div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 window.KIET = {};
@@ -20,14 +20,8 @@ const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoo
 osm.on('tileerror', ()=>{ map.getContainer().style.background='#f8f9fa'; });
 osm.addTo(map);
 const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri World Imagery'});
-window.KIET.layerGroups = {main:L.layerGroup().addTo(map),internal:L.layerGroup().addTo(map),foot:L.layerGroup().addTo(map),context:L.layerGroup().addTo(map),boundary:L.layerGroup().addTo(map),labels:L.layerGroup().addTo(map),terrain:L.layerGroup().addTo(map),accL:L.layerGroup().addTo(map)};
-function renderAccurate(acc){
-  const G=window.KIET.layerGroups;
-  
-  
-  L.geoJSON(acc.features.filter(f=>f.properties.kind==='label_accurate'),{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:4,color:'#0e6655',fillColor:'#f9e79f',fillOpacity:1,weight:2}).bindTooltip((f.properties.real_name||f.properties.sanctioned_name)+' ('+f.properties.sanctioned_name+')',{permanent:false,direction:'top'})}).addTo(G.accL);
-  window.KIET.accurate=acc;
-}
+window.KIET.layerGroups = {main:L.layerGroup().addTo(map),internal:L.layerGroup().addTo(map),foot:L.layerGroup().addTo(map),context:L.layerGroup().addTo(map),boundary:L.layerGroup().addTo(map),labels:L.layerGroup().addTo(map),terrain:L.layerGroup().addTo(map)};
+
 function styleRoad(f){
   const p=f.properties||{};
   // footway + steps default to dashed blue
@@ -92,20 +86,18 @@ function addControls(){
     'Main roads (NH-34/tertiary)':G.main,'Internal (service/residential)':G.internal,'Footpaths':G.foot,
     'Buildings+Grounds':G.context,'Labels':G.labels,
     'Terrain / elevation+hillshade':T.elev,'Terrain / slope class':T.slope,
-    'Terrain / contours 2m':T.cont,'Terrain / low pockets':T.low,
-    'Accurate labels':G.accL,
+    'Terrain / contours 2m':T.cont,'Terrain / low pockets':T.low
   },{collapsed:false}).addTo(map);
   const leg=L.control({position:'bottomright'});
   leg.onAdd=()=>{const d=L.DomUtil.create('div','info legend');d.style.cssText='background:#fff;padding:8px;border-radius:6px;font:12px system-ui';d.innerHTML='<b>Roads + Terrain</b><br/><span style="color:#e67e22">━━</span> Trunk NH-34<br/><span style="color:#fff;background:#2c3e50">━━</span> Campus service<br/><span style="color:#7fb3d5">┄┄</span> Footway<br/><span style="color:#2d6a4f">█</span> Low ~215m <span style="color:#8b5e3c">█</span> High ~231m<br/><span style="color:#7b2cbf">—</span> Contour 2m <span style="color:#0057b8">●</span> Low pocket';return d;};
   leg.addTo(map);
 }
 const J=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(u);return r.json();});
-Promise.all([J('data/roads.geojson'),J('data/campus.geojson'),J('data/terrain_contours_smooth.geojson'),J('data/terrain_low_points.geojson'),J('data/terrain_grid.json'),J('data/campus_accurate.geojson')]).then(([roads,campus,smooth,low,grid,acc])=>{
-  window.KIET.raw={roads,campus,acc};
-  renderRoads(roads); renderCampus(campus); renderTerrain({smooth,low,grid}); renderAccurate(acc); addControls();
-  const b=L.geoJSON(acc.features.filter(f=>f.properties.kind==='boundary_khasra'));
+Promise.all([J('data/roads.geojson'),J('data/campus.geojson'),J('data/terrain_contours_smooth.geojson'),J('data/terrain_low_points.geojson'),J('data/terrain_grid.json')]).then(([roads,campus,smooth,low,grid])=>{
+  window.KIET.raw={roads,campus};
+  renderRoads(roads); renderCampus(campus); renderTerrain({smooth,low,grid}); addControls();
+  const b=L.geoJSON(campus.features.filter(f=>f.properties.kind==='boundary'));
   if(b.getLayers().length) map.fitBounds(b.getBounds().pad(0.15));
-  else{const b2=L.geoJSON(campus.features.filter(f=>f.properties.kind==='boundary'));if(b2.getLayers().length)map.fitBounds(b2.getBounds().pad(0.15));}
 }).catch(()=>{alert('Could not load data/*.geojson — run via python3 -m http.server');});
 </script>
 </body>
