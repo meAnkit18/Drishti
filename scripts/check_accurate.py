@@ -3,7 +3,7 @@ p = "data/campus_accurate.geojson"
 d = json.load(open(p))
 assert d["type"] == "FeatureCollection", "not FC"
 kinds = [f["properties"].get("kind") for f in d["features"]]
-for need in ["sanctioned_building", "boundary_khasra", "label_accurate"]:
+for need in ["sanctioned_building", "boundary_khasra", "label_accurate", "parking", "solar", "road_sanctioned"]:
     assert need in kinds, f"missing kind {need}"
 for f in d["features"]:
     g = f["geometry"]
