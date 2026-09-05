@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: drishti
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
