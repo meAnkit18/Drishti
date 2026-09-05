@@ -113,18 +113,51 @@ def build_accurate():
                     f["geometry"]["coordinates"] = omap[oname]
                     p["confidence"] = "high"
                     p["osm_match"] = oname
+                    p["real_name"] = oname
         # rebuild labels from final (possibly snapped) geometry
         feats = [f for f in feats if f["properties"].get("kind") != "label_accurate"]
         for f in [x for x in feats if x["properties"]["kind"]=="sanctioned_building"]:
             ring = f["geometry"]["coordinates"][0]
             lon = sum(p[0] for p in ring[:-1])/ (len(ring)-1)
             lat = sum(p[1] for p in ring[:-1])/ (len(ring)-1)
-            feats.append({"type":"Feature","properties":{"kind":"label_accurate","sanctioned_name":f["properties"]["sanctioned_name"],"floors":f["properties"]["floors"],"lat":round(lat,5),"lon":round(lon,5)},"geometry":{"type":"Point","coordinates":[round(lon,5),round(lat,5)]}})
+            lp = {"kind":"label_accurate","sanctioned_name":f["properties"]["sanctioned_name"],"floors":f["properties"]["floors"],"lat":round(lat,5),"lon":round(lon,5)}
+            if "real_name" in f["properties"]:
+                lp["real_name"] = f["properties"]["real_name"]
+            feats.append({"type":"Feature","properties":lp,"geometry":{"type":"Point","coordinates":[round(lon,5),round(lat,5)]}})
     except FileNotFoundError:
         pass
     fc = {"type":"FeatureCollection","name":"KIET sanctioned accurate","features":feats}
-    json.dump(fc, open("data/campus_accurate.geojson","w"), indent=1)
-    print(f"Wrote {len(feats)} feats")
+    # SHIP ONLY VERIFIED GEOMETRY. Everything placed via the guessed-ENU affine
+    # (unmatched blocks, parking, solar, sanctioned roads, hand-drawn khasra) is
+    # dimension-true but position-unverified: write it to a separate file that no
+    # map loads, instead of rendering guesses as facts.
+    verified, unverified = [], []
+    verified_names = set(
+        f["properties"].get("sanctioned_name") for f in feats
+        if f["properties"].get("kind") == "sanctioned_building" and "osm_match" in f["properties"]
+    )
+    for f in feats:
+        p = f["properties"]
+        if p.get("kind") == "label_accurate" and p.get("sanctioned_name") in verified_names:
+            verified.append(f)
+        elif p.get("kind") == "sanctioned_building" and "osm_match" in p:
+            verified.append(f)
+        else:
+            if p.get("kind") == "sanctioned_building":
+                p["confidence"] = "low"
+            unverified.append(f)
+    # Khasra layer from the OSM/Google-verified boundary ring (same land, no invention)
+    try:
+        osm2 = json.load(open("data/campus.geojson"))
+        for f in osm2["features"]:
+            if f["properties"].get("kind") == "boundary" and f["geometry"]["type"] == "Polygon":
+                verified.append({"type":"Feature","properties":{"kind":"boundary_khasra","sanctioned_name":"KIET-khasra-280-282-286","confidence":"high","source":"OSM boundary ring, khasra nos from 13.jpeg Shizra"},"geometry":f["geometry"]})
+                break
+    except FileNotFoundError:
+        pass
+    json.dump({"type":"FeatureCollection","name":"KIET sanctioned accurate (verified only)","features":verified}, open("data/campus_accurate.geojson","w"), indent=1)
+    json.dump({"type":"FeatureCollection","name":"KIET sanctioned sketch (UNVERIFIED positions, do not render)","features":unverified}, open("data/campus_sanctioned_unverified.geojson","w"), indent=1)
+    print(f"Wrote {len(verified)} verified + {len(unverified)} unverified feats")
 def write_centroids():
     import csv
     acc = json.load(open("data/campus_accurate.geojson"))

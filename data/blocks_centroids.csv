@@ -2,23 +2,8 @@ name,lat,lon,floors,area,source
 A,28.75315,77.49713,G+2,2056.5,campus_accurate
 B,28.7524,77.49808,G+3,450,campus_accurate
 C,28.75229,77.49778,G+?,270,campus_accurate
-C1-demolish,28.75269,77.49724,G,183.74,campus_accurate
-C1-exist,28.75258,77.49751,G,84,campus_accurate
-Canteen,28.75288,77.49757,G+2,120,campus_accurate
 D,28.75209,77.49985,G+2,900,campus_accurate
 E,28.75216,77.49831,G+5,1400,campus_accurate
 F,28.75163,77.49886,G+3,490.2,campus_accurate
 G,28.75292,77.49857,G+?,60,campus_accurate
-I,28.75213,77.49855,G+4,632.88,campus_accurate
-J,28.75158,77.50015,G+1,883.74,campus_accurate
 L,28.75245,77.49905,G+4,440,campus_accurate
-PharmaJ,28.75229,77.4982,G+2,654.4,campus_accurate
-S,28.752,77.49889,G+? ,540,campus_accurate
-U,28.75209,77.49922,G+4,360,campus_accurate
-V,28.75223,77.49903,G+5,1241.52,campus_accurate
-W,28.75207,77.49936,G+?,96,campus_accurate
-X,28.75151,77.4999,G+1,521.1,campus_accurate
-X1,28.75142,77.50021,G+?,60,campus_accurate
-Y,28.75223,77.49897,G+5,748.31,campus_accurate
-Y1,28.75212,77.49932,G+?,60,campus_accurate
-Z,28.7524,77.49882,G+8,748.31,campus_accurate
