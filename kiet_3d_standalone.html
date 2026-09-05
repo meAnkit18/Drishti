@@ -36,7 +36,7 @@
   <label><input type="checkbox" data-l="acc" checked/> Sanctioned Rev6</label>
   <label><input type="checkbox" id="rot"/> Auto-rotate</label>
   <button id="reset">Reset view</button>
-  <div style="margin-top:6px;font-size:11px;color:#555">Click terrain for elevation.<br/>DSM 30m ±4m — broad relief only.</div>
+  <div style="margin-top:6px;font-size:11px;color:#555">Click terrain for elevation.</div>
 </div>
 <div id="attr">Terrain: Copernicus GLO-30 DSM · Roads/buildings © OpenStreetMap contributors · Sanctioned Rev6 16/10/2024 approx 3-5m · Building heights estimated</div>
 <div id="tip"></div>
@@ -156,7 +156,7 @@ renderer.domElement.addEventListener('click',e=>{
   const hit=ray.intersectObject(window._terrain,false)[0];
   if(hit){ const elev=(hit.point.y/ex).toFixed(1);
     tip.style.display='block'; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY+12)+'px';
-    tip.innerHTML='<b>~'+elev+' m</b><br/>30m DSM ±4m — broad relief only';
+    tip.innerHTML='<b>~'+elev+' m</b><br/>30m DSM ±4m';
     clearTimeout(window._tipt); window._tipt=setTimeout(()=>tip.style.display='none',3500);
   }
 });
