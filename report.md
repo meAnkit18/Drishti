@@ -154,3 +154,16 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
 - Fix: clipped every road/contour polyline to the valid source-cell mask
   (all-4-neighbors-valid + half-cell edge erosion), splitting into valid runs
   (roads 45→30 segments, contour pts −33%). Before/after crops verified clean.
+
+## 11. Static-hosting compat + deploy (Vercel & Render) [DONE]
+- Compat: added `index.html` landing (root 404 otherwise), fixed `render.yaml`
+  (dropped empty buildCommand), added `vercel.json` + `.vercelignore` (keeps the
+  40 MB raw DEM out of Vercel deploys), verified zero absolute-path refs and all
+  15 pages/assets return 200 locally.
+- Vercel: imported meAnkit18/Drishti via dashboard (preset Other/static), production
+  domain `https://drishti-sand.vercel.app` (plain `drishti.vercel.app` was taken by
+  an older project). Note: hashed deployment URLs sit behind Vercel SSO login;
+  the production domain is public. Verified 200s for /, 3D page, JSON.
+- Render: new Static Site from repo, name Drishti, branch main, no build command,
+  publish dir `.` — first deploy 21.7s, live at `https://drishti-cl8r.onrender.com`
+  (verified 200s). Both hosts auto-redeploy on `main` pushes.
