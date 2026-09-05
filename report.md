@@ -167,3 +167,9 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
 - Render: new Static Site from repo, name Drishti, branch main, no build command,
   publish dir `.` — first deploy 21.7s, live at `https://drishti-cl8r.onrender.com`
   (verified 200s). Both hosts auto-redeploy on `main` pushes.
+
+## 12. Accurate map (sanctioned Rev6 + Google-verified) [DONE]
+- Builder `scripts/build_accurate_geojson.py` affine via 6 controls → `data/campus_accurate.geojson` (17 sanctioned buildings A-Z incl. star D, C1-demolish, khasra 280-282-286, 17 labels) + `data/blocks_centroids.csv`.
+- Anchors 28.75257,77.49851 / 28.752441,77.49902 / 28.753007,77.498594. Target 3-5m, not survey.
+- Maps upgraded: road + terrain + 3D load sanctioned toggles + Esri satellite, popups show 5-decimal lat/long + floors/area/source. 3D extrudes G+n*3.3m (shed 4m), demolish red, sanctioned green.
+- Sums: footprint 12186.96 (sanity vs coverage 20801), parking 20232.12, FAR 87715 verified in check_sums. Checks: check_accurate OK 35 feats, check_roadmap OK, check_allmaps OK.
