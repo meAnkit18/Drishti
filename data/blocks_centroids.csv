@@ -1,0 +1,18 @@
+name,lat,lon,floors,area,source
+A,28.75265,77.49878,G+2,2056.5,campus_accurate
+B,28.75351,77.49778,G+3,450,campus_accurate
+C1-demolish,28.75399,77.49808,G,183.74,campus_accurate
+Canteen,28.75297,77.49868,G+2,120,campus_accurate
+D,28.75298,77.49828,G+2,900,campus_accurate
+E,28.75341,77.49775,G+5,1400,campus_accurate
+F,28.75379,77.49746,G+3,490.2,campus_accurate
+I,28.75391,77.49746,G+4,632.88,campus_accurate
+J,28.75344,77.49701,G+1,883.74,campus_accurate
+L,28.75316,77.49755,G+4,440,campus_accurate
+PharmaJ,28.7539,77.49765,G+2,654.4,campus_accurate
+S,28.75387,77.49732,G+? ,540,campus_accurate
+U,28.75315,77.4977,G+4,360,campus_accurate
+V,28.75297,77.49793,G+5,1241.52,campus_accurate
+X,28.75396,77.49674,G+1,521.1,campus_accurate
+Y,28.75305,77.49791,G+5,748.31,campus_accurate
+Z,28.75275,77.49822,G+8,748.31,campus_accurate

@@ -82,5 +82,21 @@ def build_accurate():
     fc = {"type":"FeatureCollection","name":"KIET sanctioned accurate","features":feats}
     json.dump(fc, open("data/campus_accurate.geojson","w"), indent=1)
     print(f"Wrote {len(feats)} feats")
+def write_centroids():
+    import csv
+    acc = json.load(open("data/campus_accurate.geojson"))
+    rows = []
+    for f in acc["features"]:
+        if f["properties"].get("kind") == "label_accurate":
+            p = f["properties"]
+            rows.append({"name":p["sanctioned_name"],"lat":p["lat"],"lon":p["lon"],"floors":p["floors"],"area":"","source":"campus_accurate"})
+    # fill area from buildings
+    am = {f["properties"]["sanctioned_name"]:f["properties"].get("footprint_sqm","") for f in acc["features"] if f["properties"].get("kind")=="sanctioned_building"}
+    for r in rows:
+        r["area"] = am.get(r["name"],"")
+    w = csv.DictWriter(open("data/blocks_centroids.csv","w",newline=""), fieldnames=["name","lat","lon","floors","area","source"])
+    w.writeheader(); w.writerows(sorted(rows, key=lambda x: x["name"]))
+    print(f"Wrote {len(rows)} centroids")
 if __name__ == "__main__":
     build_accurate()
+    write_centroids()
