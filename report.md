@@ -320,8 +320,7 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
   available`) by inlining weights to single-file ONNX (ORT-vs-torch 3e-07);
   Space now prints "model ready".
 
-## 22. End-user planner page [DONE 2026-09-07]
-- `flood_planner.html` (new; landing card inserted after Flood Nowcasting Demo,
+## 22. End-user planner page [DONE 2026-09-07]- `flood_planner.html` (new; landing card inserted after Flood Nowcasting Demo,
   all existing cards untouched): Leaflet OSM + campus + roads, baked
   baseline-U-Net depth stacks (`planner/storms/`, 2 storms × t0 + 9 leads,
   int16-mm bins, 744 KB total) as heat overlay with NOW→+180 slider, tap for
@@ -333,3 +332,12 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
   selftest shows 64 cm/DANGER + working dual routes (5.30 km). Fixed along the
   way: `depth_now.bin` naming, init-order guard, overlay pane order, demo
   endpoints via largest road-graph component. Live on Vercel (200s).
+
+## 23. Prod simulation fix — shipped demo bank [DONE 2026-09-07]
+- Root cause: `outputs/` gitignored → `outputs/viz/index.json` 404 on Vercel,
+  viewer directory empty on prod (planner data was fine).
+- Fix: `outputs/viz-demo/` (2 smallest bundles: test_scenario_0001 T=15 +
+  v1demo_test_v1_00226 T=20, 5.3 MB) committed via `outputs/*` + `!viz-demo`
+  ignore negations; viewer `?bank=demo` switches roots (3 fetch sites +
+  0009-aware default). Local full bank + validator untouched.
+- Verified: headless 2/2 runs render, prod serves index + frames (200s).
