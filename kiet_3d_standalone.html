@@ -27,6 +27,7 @@
   <h3>KIET 3D Terrain</h3>
   <label>Vertical exaggeration: <b id="exv">3.0×</b></label>
   <input id="ex" type="range" min="1" max="6" step="0.5" value="3"/>
+  <label>Style: <select id="style"><option value="both" selected>Mesh + Solid</option><option value="mesh">Mesh only</option><option value="solid">Solid only</option></select></label>
   <label><input type="checkbox" data-l="main" checked/> Main roads (NH-34)</label>
   <label><input type="checkbox" data-l="internal" checked/> Internal roads</label>
   <label><input type="checkbox" data-l="foot" checked/> Footpaths</label>
@@ -98,14 +99,29 @@ function ramp(t){ const c=[[45,106,79],[149,213,178],[244,226,133],[214,140,69],
   g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
   g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   g.setIndex(idx); g.computeVertexNormals();
-  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,metalness:0}));
-  m.name='terrain'; world.add(m); window._terrain=m;
+  // mesh visual: faint solid + wireframe overlay sharing same geometry
+  window._meshParts={solid:[],wire:[]}; const meshParts=window._meshParts; window._curStyle='both';
+  window._applyStyle=function applyStyle(){
+    const curStyle=window._curStyle;
+    const showSolid=curStyle==='solid'||curStyle==='both';
+    const showWire=curStyle==='mesh'||curStyle==='both';
+    for(const o of window._meshParts.solid){ o.visible=showSolid; if(o.material){ o.material.opacity=(curStyle==='both')?o.userData.bothOp:o.userData.solidOp; } }
+    for(const o of window._meshParts.wire){ o.visible=showWire; }
+  };
+  const terrainSolidMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,metalness:0,transparent:true,opacity:0.35});
+  const m=new THREE.Mesh(g,terrainSolidMat);
+  m.name='terrain'; m.userData.bothOp=0.35; m.userData.solidOp=1; world.add(m); window._terrain=m; meshParts.solid.push(m);
+  const terrainWireMat=new THREE.MeshBasicMaterial({color:0x22d3ee,wireframe:true,transparent:true,opacity:0.55});
+  const wm=new THREE.Mesh(g,terrainWireMat);
+  wm.name='terrain-wire'; wm.position.y=0.18; world.add(wm); window._terrainWire=wm; meshParts.wire.push(wm);
 }
-// skirt base under terrain
+// skirt base under terrain (mesh visual: solid + edge wireframe)
 {
   const w=(B.lon1-B.lon0)*MX, h=(B.lat1-B.lat0)*MY;
-  const base=new THREE.Mesh(new THREE.BoxGeometry(w+20,22,h+20),new THREE.MeshStandardMaterial({color:0x1c2942,roughness:1}));
-  base.position.y=emin-12; world.add(base);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(w+20,22,h+20),new THREE.MeshStandardMaterial({color:0x1c2942,roughness:1,transparent:true,opacity:0.9}));
+  base.position.y=emin-12; world.add(base); base.userData.bothOp=0.9; base.userData.solidOp=1; window._meshParts.solid.push(base);
+  const baseEdges=new THREE.LineSegments(new THREE.EdgesGeometry(base.geometry),new THREE.LineBasicMaterial({color:0x22d3ee,transparent:true,opacity:0.35}));
+  baseEdges.position.copy(base.position); world.add(baseEdges); window._meshParts.wire.push(baseEdges);
 }
 const groups={main:new THREE.Group(),internal:new THREE.Group(),foot:new THREE.Group(),bld:new THREE.Group(),cont:new THREE.Group(),low:new THREE.Group(),acc:new THREE.Group()};
 Object.values(groups).forEach(g=>world.add(g));
@@ -121,12 +137,14 @@ for(const b of data.buildings){
   const sh=new THREE.Shape(b.ring.map(p=>new THREE.Vector2(X(p[0]),-Zc(p[1]))));
   const g=new THREE.ExtrudeGeometry(sh,{depth:b.h,bevelEnabled:false});
   g.rotateX(-Math.PI/2); // shape XY -> XZ plane; extrude depth becomes +Y? adjust:
-  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x9aa7b8,roughness:.85,metalness:.05}));
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x9aa7b8,roughness:.85,metalness:.05,transparent:true,opacity:0.45}));
   // after rotateX(-90°): shape (x,y)->(x,0,y?) -> position at base elev
   m.position.y=b.base;
-  m.userData={name:b.name};
-  groups.bld.add(m);
-} fetch("data/campus_accurate.geojson").then(r=>{if(!r.ok)throw 0;return r.json();}).then(acc=>{for(const f of acc.features.filter(x=>x.properties.kind==="sanctioned_building")){const ring=f.geometry.coordinates[0];const fl=f.properties.floors||"G+2";let n=2;const mm2=/G\+(\d)/.exec(fl);if(mm2)n=parseInt(mm2[1],10);const hh=fl.includes("shed")?4:n*3.3;const sh=new THREE.Shape(ring.map(p=>new THREE.Vector2(X(p[0]),-Zc(p[1]))));const g=new THREE.ExtrudeGeometry(sh,{depth:hh,bevelEnabled:false});g.rotateX(-Math.PI/2);const col=f.properties.sanctioned_name.includes("demolish")?0xe74c3c:0x2ecc71;const mes=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:col,roughness:.8,metalness:.05,transparent:true,opacity:.92}));mes.position.y=emin;mes.userData={name:"Block "+f.properties.sanctioned_name+" "+fl};groups.acc.add(mes);}window.KIET_ACC=acc;}).catch(()=>{});
+  m.userData={name:b.name,bothOp:0.45,solidOp:0.95};
+  groups.bld.add(m); window._meshParts.solid.push(m);
+  const eg=new THREE.LineSegments(new THREE.EdgesGeometry(g,25),new THREE.LineBasicMaterial({color:0x7dd3fc,transparent:true,opacity:0.9}));
+  eg.position.y=b.base; groups.bld.add(eg); window._meshParts.wire.push(eg);
+} fetch("data/campus_accurate.geojson").then(r=>{if(!r.ok)throw 0;return r.json();}).then(acc=>{for(const f of acc.features.filter(x=>x.properties.kind==="sanctioned_building")){const ring=f.geometry.coordinates[0];const fl=f.properties.floors||"G+2";let n=2;const mm2=/G\+(\d)/.exec(fl);if(mm2)n=parseInt(mm2[1],10);const hh=fl.includes("shed")?4:n*3.3;const sh=new THREE.Shape(ring.map(p=>new THREE.Vector2(X(p[0]),-Zc(p[1]))));const g=new THREE.ExtrudeGeometry(sh,{depth:hh,bevelEnabled:false});g.rotateX(-Math.PI/2);const col=f.properties.sanctioned_name.includes("demolish")?0xe74c3c:0x2ecc71;const mes=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:col,roughness:.8,metalness:.05,transparent:true,opacity:.35}));mes.position.y=emin;mes.userData={name:"Block "+f.properties.sanctioned_name+" "+fl,bothOp:.35,solidOp:.92};groups.acc.add(mes);window._meshParts.solid.push(mes);const eg=new THREE.LineSegments(new THREE.EdgesGeometry(g,25),new THREE.LineBasicMaterial({color:0xa7f3d0,transparent:true,opacity:.9}));eg.position.y=emin;groups.acc.add(eg);window._meshParts.wire.push(eg);}window.KIET_ACC=acc;window._applyStyle&&window._applyStyle();}).catch(()=>{});
 for(const c of data.contours){
   const pts=c.pts.map(p=>new THREE.Vector3(X(p[0]),p[2]+0.8,Zc(p[1])));
   groups.cont.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xb366ff})));
@@ -145,6 +163,9 @@ document.querySelectorAll('[data-l]').forEach(cb=>cb.addEventListener('change',(
   
   groups[k].visible=cb.checked;
 }));
+// mesh style toggle (mesh visual instead of solid)
+document.getElementById('style').addEventListener('change',e=>{window._curStyle=e.target.value;window._applyStyle();});
+window._applyStyle();
 document.getElementById('rot').addEventListener('change',e=>controls.autoRotate=e.target.checked);
 controls.autoRotateSpeed=0.8;
 document.getElementById('reset').addEventListener('click',()=>{camera.position.copy(home);controls.target.copy(TGT);});
