@@ -21,7 +21,8 @@ python3 -m http.server 8123   # open /space/index.html
 ## Rebuild / re-export
 
 - Model: `models/baseline_unet.py` + weights `Aman34243/drishti-flood-nowcaster`
-  → ONNX via torch dynamo (`drishti.onnx` + sidecar `.onnx.data`, keep side by side).
+  → single-file ONNX (`drishti.onnx`, weights inlined — ORT-web cannot load the
+  external-data sidecar over HTTP).
 - Windows: `dataset/ml_dataset.py:FloodWindows` + `models/train_baseline.py:build_sample`
   → float32 LE `w*.bin` (36×110×160) + `meta.json` (see `windows/meta.json` schema).
 - Publish: `hf upload Aman34243/drishti-flood-nowcast space --type space`

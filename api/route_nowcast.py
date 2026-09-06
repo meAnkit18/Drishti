@@ -26,7 +26,10 @@ def nowcast_route(base=SPACE, cache="/tmp/space_cache", window=0, lead_min=30,
     x = np.fromfile(_get(base, "windows/" + w["file"], cache), dtype="<f4")
     x = x.reshape(1, meta["channels"], meta["ny"], meta["nx"])
     onnx_path = _get(base, "drishti.onnx", cache)
-    _get(base, "drishti.onnx.data", cache)  # sidecar weights, needed before load
+    try:
+        _get(base, "drishti.onnx.data", cache)  # sidecar weights, if present
+    except Exception:
+        pass  # single-file ONNX needs no sidecar
     sess = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
     pred = np.maximum(sess.run(None, {"input": x})[0][0], 0)
     li = LEADS.index(lead_min)
