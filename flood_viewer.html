@@ -268,14 +268,16 @@ function scenVisible(s){
   if(scenQuery&&!(s.id+s.temporal+s.spatial).toLowerCase().includes(scenQuery))return false;
   return true;
 }
+/* demo bank (?bank=demo) ships in git; default bank needs local generation */
+const VIZROOT=new URLSearchParams(location.search).get("bank")==="demo"?"outputs/viz-demo":"outputs/viz";
 async function loadIndex(){
-  S.scenList=await(await fetch("outputs/viz/index.json")).json();
+  S.scenList=await(await fetch(`${VIZROOT}/index.json`)).json();
   document.querySelectorAll(".qc-category-pill").forEach(p=>p.onclick=()=>{
     document.querySelectorAll(".qc-category-pill").forEach(q=>q.setAttribute("aria-selected","false"));
     p.setAttribute("aria-selected","true");scenFilter=p.dataset.f;renderRows();});
   $("scensearch").oninput=e=>{scenQuery=e.target.value.toLowerCase();renderRows();};
   renderRows();
-  await loadScenario("test_scenario_0009");
+  await loadScenario(S.scenList.some(s=>s.id==="test_scenario_0009")?"test_scenario_0009":S.scenList[0].id);
 }
 function renderRows(){
   const box=$("scenrows");box.innerHTML="";
@@ -294,7 +296,7 @@ function renderRows(){
 async function loadScenario(id){
   stop();S.scenId=id;
   S.frames.clear();S.k=0;S.sel=null;S.rainMaxSoFar=0;
-  S.meta=await(await fetch(`outputs/viz/${id}/meta.json`)).json();
+  S.meta=await(await fetch(`${VIZROOT}/${id}/meta.json`)).json();
   const m=S.meta,sp=m.spec;
   $("simspec").textContent=`${id} · ${sp.total_mm.toFixed(0)} mm / ${sp.duration_h.toFixed(1)} h · ${sp.temporal} × ${sp.spatial} · blockage ${sp.blockage_level} · net v${sp.network_variant} · mass err ${m.mass_err.toExponential(0)}`;
   $("tmax").textContent=fmtT(m.T*m.dt_min);
@@ -308,7 +310,7 @@ async function loadScenario(id){
 }
 async function ensureFrame(k){
   if(S.frames.has(k))return S.frames.get(k);
-  const f=await(await fetch(`outputs/viz/${S.scenId}/frame_${String(k).padStart(3,"0")}.json`)).json();
+  const f=await(await fetch(`${VIZROOT}/${S.scenId}/frame_${String(k).padStart(3,"0")}.json`)).json();
   const F={k,t_min:f.t_min,
     rain:b64ToI16(f.rain_dmm.b64i16),depth:b64ToI16(f.depth_mm.b64i16),
     vel:b64ToI16(f.vel_cms.b64i16),node:b64ToI16(f.node_mm.b64i16),

@@ -12,8 +12,9 @@ kiet_campus_data/
 # local agent instructions (tracked already — ignore only affects untracked)
 AGENT.md
 
-# generated simulation + viz outputs (local only)
-outputs/
+# generated simulation + viz outputs (local only) — except the shipped demo bank
+outputs/*
+!outputs/viz-demo
 
 # large raw rasters (runtime uses data/terrain_grid.json + kiet_terrain/campus_osm.geojson)
 *.tif
