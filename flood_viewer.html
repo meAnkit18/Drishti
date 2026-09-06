@@ -268,10 +268,18 @@ function scenVisible(s){
   if(scenQuery&&!(s.id+s.temporal+s.spatial).toLowerCase().includes(scenQuery))return false;
   return true;
 }
-/* demo bank (?bank=demo) ships in git; default bank needs local generation */
-const VIZROOT=new URLSearchParams(location.search).get("bank")==="demo"?"outputs/viz-demo":"outputs/viz";
+/* demo bank (?bank=demo) ships in git; default bank needs local generation.
+   Bare loads fall back to the demo bank when the full index is absent (e.g. deploys). */
+let VIZROOT=new URLSearchParams(location.search).get("bank")==="demo"?"outputs/viz-demo":"outputs/viz";
 async function loadIndex(){
-  S.scenList=await(await fetch(`${VIZROOT}/index.json`)).json();
+  try{
+    const r=await fetch(`${VIZROOT}/index.json`);
+    if(!r.ok)throw new Error(r.status);
+    S.scenList=await r.json();
+  }catch(e){
+    VIZROOT="outputs/viz-demo";
+    S.scenList=await(await fetch(`${VIZROOT}/index.json`)).json();
+  }
   document.querySelectorAll(".qc-category-pill").forEach(p=>p.onclick=()=>{
     document.querySelectorAll(".qc-category-pill").forEach(q=>q.setAttribute("aria-selected","false"));
     p.setAttribute("aria-selected","true");scenFilter=p.dataset.f;renderRows();});
