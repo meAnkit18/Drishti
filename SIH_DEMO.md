@@ -9,6 +9,15 @@ Open **https://aman34243-drishti-flood-nowcast.static.hf.space/**
 Model (476k-param U-Net → ONNX) runs on-device; free HF static hosting, never sleeps.
 Deep-linkable: `?window=0&lead=30`. Weights: `Aman34243/drishti-flood-nowcaster`.
 
+## 1b. End-user product: Flood Risk & Safe Route Planner
+
+Open **`flood_planner.html`** (landing card “Interactive Flood Risk & Safe Route Planner”,
+placed after Flood Nowcasting Demo — all older cards unchanged).
+Tap any location for depth/peak/onset/risk NOW→+180 min, set origin/destination for
+normal vs flood-aware routes on the OSM road graph. Data: `planner/storms/` (baked
+baseline-U-Net predictions, int16-mm bins + meta; regen: snippet in §4 flow).
+Deep-linkable: `?storm=1&h=9&selftest=1`.
+
 ## 2. Physics viewer (localhost)
 
 ```

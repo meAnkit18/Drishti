@@ -319,3 +319,17 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
   ORT-web external-data failure (console: `Module.MountedFiles is not
   available`) by inlining weights to single-file ONNX (ORT-vs-torch 3e-07);
   Space now prints "model ready".
+
+## 22. End-user planner page [DONE 2026-09-07]
+- `flood_planner.html` (new; landing card inserted after Flood Nowcasting Demo,
+  all existing cards untouched): Leaflet OSM + campus + roads, baked
+  baseline-U-Net depth stacks (`planner/storms/`, 2 storms × t0 + 9 leads,
+  int16-mm bins, 744 KB total) as heat overlay with NOW→+180 slider, tap for
+  water-now/at-horizon/peak/onset + CLEAR/WATCH/WARNING/DANGER badge, nearest
+  road label, origin/destination → normal (grey dashed) vs flood-aware (green,
+  10× depth penalty, ≥30 cm hard-avoid) A* routes with distance/worst-water
+  stats, `?storm=&h=&selftest=` deep-links, synthetic labels throughout.
+- Verified headless: zero console errors; overlay pixel-signature confirmed;
+  selftest shows 64 cm/DANGER + working dual routes (5.30 km). Fixed along the
+  way: `depth_now.bin` naming, init-order guard, overlay pane order, demo
+  endpoints via largest road-graph component. Live on Vercel (200s).
