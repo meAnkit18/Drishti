@@ -303,3 +303,19 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
   max 0.101 m, 175 m² flooded, 745 m safe route. Test 1/1 (local-file fixture).
 - `SIH_DEMO.md` runbook + landing Live-Model card. Gradio `app.py` kept in
   /tmp only (needs PRO — not pursued).
+
+## 21. Lean GitHub push + deploy verification [DONE 2026-09-07]
+- `.gitignore`: outputs/, *.h5/*.tif/*.pt/*.onnx(+.data), kiet_terrain/data/,
+  terrain/ + flood/ + synthetic/ + drainage/ (dead, unimported), space bins,
+  caches. Removed tracked 40 MB raw tif (`git rm --cached`, file kept local).
+  Staged set audited: no blobs >1 MB except 438 KB preview PNG.
+- Fresh-clone runnable: `tools/fetch_demo_data.py` pulls viewer sets from new
+  public dataset `Aman34243/drishti-demo-data` (v0 17 MB + v1 67 MB, verified
+  round-trip); `space/README.md` documents binary fetch + rebuild.
+- Pushed 8422ab8 (+904c5e3 ONNX fix). Vercel serves new landing (Live-Model
+  card found in prod HTML); Render 200 incl. flood_viewer.html.
+- Browser check via headless Chrome (no browser-MCP tool in this env; `mcp`
+  CLI broken — missing typer): landing 5 cards OK; Space caught + fixed
+  ORT-web external-data failure (console: `Module.MountedFiles is not
+  available`) by inlining weights to single-file ONNX (ORT-vs-torch 3e-07);
+  Space now prints "model ready".
