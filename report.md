@@ -341,3 +341,11 @@ design, flood depth, or construction — needs LiDAR/RTK survey.
   ignore negations; viewer `?bank=demo` switches roots (3 fetch sites +
   0009-aware default). Local full bank + validator untouched.
 - Verified: headless 2/2 runs render, prod serves index + frames (200s).
+
+## 24. Headfull browser proof — simulation works [DONE 2026-09-07]
+- No browser-MCP server exists here (`mcp` = dev-tools CLI only), so tested
+  with real headed Chrome (Xvfb + CDP, `/tmp/cdp_test.py`): Play advanced
+  k 0→4 (clock t+0:25), canvas click selected cell [64,80] with inspector
+  readout, timeline CSV 17 rows, cell-series CSV 17 rows — ALL PASSED.
+  Screenshot shows live flooding + surcharge halos + full causal chain.
+  Nothing to fix.
