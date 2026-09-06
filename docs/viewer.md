@@ -18,6 +18,15 @@ python3 -m http.server 8123            # fetch() needs http, not file://
 
 Press Play (or Space), scrub the timeline (or ←/→), click cells/nodes/pipes.
 
+## CSV export (⤓t / ⤓s buttons in the transport bar)
+
+- **⤓t** — `<scenario>_timeline.csv`: per-frame `t_min, rain_mean/max_mm,
+  flooded_cells, flooded_m2, max_depth_m` (straight from the bundle meta, no fetch).
+- **⤓s** — `<scenario>_<cell|node|pipe>_<id>.csv`: full event series for the
+  current inspector selection (cell → rain/depth/velocity; node → level;
+  pipe → flow). Fetches all frames with `k/T` progress on the button.
+- Both carry a `#` header: scenario id + synthetic-drainage note + 1 mm display resolution.
+
 ## Data pipeline (all precomputed)
 
 ```

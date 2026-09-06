@@ -177,7 +177,7 @@ canvas#map{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
 </header>
 
 <aside class="qc-directory-card qc-glass-panel" aria-label="Scenario directory">
-  <span class="qc-eyebrow">Flood scenarios · 10 runs</span>
+  <span class="qc-eyebrow">Flood scenarios · sim bank</span>
   <h1>Campus <em>flooding,</em> watched.</h1>
   <p>Simulated rainfall events on the KIET digital twin. Pick a run to replay it on the map.</p>
   <div class="qc-search-field"><span aria-hidden="true">⌕</span><input id="scensearch" type="search" placeholder="Filter runs…" aria-label="Filter scenarios"/></div>
@@ -218,6 +218,8 @@ canvas#map{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
       <option value="0.5">0.5×</option><option value="1" selected>1×</option>
       <option value="2">2×</option><option value="4">4×</option><option value="8">8×</option>
     </select>
+    <button class="qc-tbtn ghost" id="csvTime" aria-label="Download scenario timeline as CSV" title="Scenario timeline CSV">⤓t</button>
+    <button class="qc-tbtn ghost" id="csvSel" aria-label="Download selection series as CSV" title="Selection series CSV">⤓s</button>
   </div>
   <div class="qc-legend" id="legend"></div>
 </div>
@@ -588,6 +590,42 @@ document.addEventListener("keydown",e=>{
 });
 resetInspector();loadIndex();
 window.VIZ=S;
+
+/* ---------- CSV export (scenario data, 1 mm display resolution) ---------- */
+function downloadCSV(name,text){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:"text/csv"}));
+  a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+$("csvTime").onclick=()=>{
+  if(!S.meta)return;
+  const m=S.meta;
+  let s=`# ${S.scenId} timeline — simulated (SYNTHETIC drainage), 1mm display resolution\n`;
+  s+="t_min,rain_mean_mm,rain_max_mm,flooded_cells,flooded_m2,max_depth_m\n";
+  for(const fr of m.frames)
+    s+=`${fr.t_min},${fr.rain_mean_mm},${fr.rain_max_mm},${fr.flood_cells},${fr.flood_m2},${fr.maxd_m}\n`;
+  downloadCSV(`${S.scenId}_timeline.csv`,s);
+};
+$("csvSel").onclick=async ev=>{
+  if(!S.meta||!S.sel)return;
+  const btn=ev.currentTarget,m=S.meta,s=S.sel,rows=[];
+  const hold=btn.textContent;
+  for(let k=0;k<m.T;k++){
+    btn.textContent=`${k+1}/${m.T}`;
+    const F=await ensureFrame(k);
+    if(s.type==="cell"){const c=s.i*m.nx+s.j;
+      rows.push([F.t_min,(F.rain[c]/10).toFixed(1),F.depth[c],(F.vel[c]/100).toFixed(2)]);}
+    else if(s.type==="node")rows.push([F.t_min,(F.node[s.id]/1000).toFixed(3)]);
+    else rows.push([F.t_min,(F.pipe[s.id]/1e5).toFixed(5)]);
+  }
+  btn.textContent=hold;
+  const head=s.type==="cell"?"t_min,rain_mm,depth_mm,vel_mps":s.type==="node"?"t_min,level_m":"t_min,flow_m3s";
+  const id=s.type==="cell"?`cell_${s.i}_${s.j}`:`${s.type}_${s.id}`;
+  downloadCSV(`${S.scenId}_${id}.csv`,
+    `# ${S.scenId} ${id} — simulated (SYNTHETIC drainage), 1mm display resolution\n${head}\n`+
+    rows.map(r=>r.join(",")).join("\n")+"\n");
+};
 </script>
 </body>
 </html>

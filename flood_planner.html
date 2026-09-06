@@ -51,6 +51,7 @@ footer{font-size:11px;color:var(--mut);padding:8px 16px;background:#fff;border-t
 <aside>
 <div class="card"><h2>1 · Forecast horizon</h2>
 <div class="horizon"><input id="horizon" type="range" min="0" max="9" step="1" value="3"/><b id="horizonLab">+30 min</b></div>
+<div class="btnrow" style="margin-top:8px"><button id="bPlay" class="primary">▶ Simulate flood</button></div>
 <div class="legend"><span class="sw" style="background:#e3ecf7"></span>dry &lt;5cm <span class="sw" style="background:#7fb3f7"></span>5–15cm <span class="sw" style="background:#f7b731"></span>15–30cm <span class="sw" style="background:#e0393e"></span>&gt;30cm</div>
 </div>
 <div class="card"><h2>2 · Selected location <span id="risk" class="risk ok" style="margin-left:6px">tap map</span></h2>
@@ -214,6 +215,17 @@ $("bClr").onclick=()=>{routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[]
 $("horizon").oninput=()=>{$("horizonLab").textContent=LEADS[+$("horizon").value]===0?"NOW":"+"+LEADS[+$("horizon").value]+" min";
   state.hi=+$("horizon").value;drawHeat();updateMetrics();if(state.origin&&state.dest)runRoutes();
   history.replaceState(null,"","?storm="+state.storm+"&h="+state.hi);};
+let playT=null;
+$("bPlay").onclick=()=>{
+  if(playT){clearInterval(playT);playT=null;$("bPlay").textContent="▶ Simulate flood";return;}
+  if(state.hi>=LEADS.length-1){$("horizon").value=0;}
+  $("bPlay").textContent="⏸ Pause";
+  playT=setInterval(()=>{
+    const h=+$("horizon").value+1;
+    if(h>LEADS.length-1){clearInterval(playT);playT=null;$("bPlay").textContent="▶ Simulate flood";return;}
+    $("horizon").value=h;$("horizon").dispatchEvent(new Event("input"));
+  },900);
+};
 async function loadStorm(i){
   state.storm=i;const name=STORMS[i];
   const meta=await(await fetch("planner/storms/"+name+"/meta.json")).json();
